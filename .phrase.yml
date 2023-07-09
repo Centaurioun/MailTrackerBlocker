@@ -1,0 +1,13 @@
+phrase:
+  access_token: 4ca00a4aa155c4fb9dc4c663b0cf077623fc7e332d5291a12540a286384f6e4e
+  project_id: dcdac35769b9f49d9296470111c03eca
+  push:
+    sources:
+    - file: K:\IdeaProjects\MailTrackerBlocker\Resources\en.lproj\Localizable.strings
+      params:
+        file_format: strings
+  pull:
+    targets:
+    - file: K:\IdeaProjects\MailTrackerBlocker\Resources\tr.lproj\Localizable.strings
+      params:
+        file_format: strings

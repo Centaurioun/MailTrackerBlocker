@@ -214,6 +214,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"t.info.adobesystems.com",
             @"toutapp.com",
             @"112.2o7.net",
+            @"/ee/v1/open", // adobe experience cloud
             @"postoffice.adobe.com/po-server/link/open"
         ],
         @"AgileCRM": @[@"agle2.me/open"],
@@ -416,6 +417,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Hyper Hyper": @[@"hyperhub.com.au/newhub/api/email/track"],
         @"iContact": @[@"click.icptrack.com/icp"],
         @"Indeed": @[@"subscriptions.indeed.com/imgping"],
+        @"Infobip": @[@"/tracking/1/open/\\w{8}"],
         @"Infusion Software": @[
             @"infusionsoft.com/app/emailOpened",
             @"keap-link\\d{3}.com/v2/render/"
@@ -634,9 +636,10 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         ],
         @"Splio": @[@"trk-2.net/ouv"],
         @"Staples": @[@"/ctt/mktOpen\\?"],
+        @"Steam": @[@"store.steampowered.com/emi/"],
         @"Step Coupon": @[@"step-coupon.com/review_mail_read_status.html"],
         @"Streak": @[@"mailfoogae.appspot.com"],
-        @"SMTP.com": @[@"track.smtpsendmail.com/\\d{5}/o"],
+        @"SMTP.com": @[@"track.smtpsendmail.com/\\d{5,7}/o"],
         @"Substack": @[@"substack.com/o/"],
         @"Superhuman": @[@"r.superhuman.com"],
         @"TataDocomoBusiness": @[@"tatadocomobusiness.com/rts/"],

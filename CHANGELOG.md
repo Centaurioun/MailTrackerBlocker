@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.8] - 2022-12-11
+
+- #190 add Steam rule
+- improve Adobe rule
+- improve SMTP rule
+
+## [0.7.7] - 2022-11-03
+
+- add Infobip
+- #189 support macOS 13.1 (thanks @malwcal)
+
 ## [0.7.6] - 2022-10-23
 
 - improve dataX/b→dash, Omnisend rules
