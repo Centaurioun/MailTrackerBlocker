@@ -19,7 +19,7 @@
 
 NSString * const kGenericSpyPixelRegex = @"<img[^>]+(width\\s*=[\"'\\s]*[01]p?x?[\"'\\s]|[^-]width:\\s*[01]px)+[^>]*>";
 NSString * const kImgTagTemplateRegex = @"<img[^>]+%@+[^>]*>";
-NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\"]?[\\w:./]*%@[\\w:&./\\?=]*[\'\"]?\\)";
+NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\"]?[\\w:./]*%@[\\w:&./\\?=~]*[\'\"]?\\)";
 
 @synthesize trackers, delegate;
 
@@ -100,9 +100,11 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
     }
     
     // strip additional CSS tracker
+    // doesn't add to trackers since it picked up as img above
     NSArray *cssTrackingDict = @[
         [[trackingDict valueForKey:@"Email on Acid"] firstObject],
         [[trackingDict valueForKey:@"Litmus"] firstObject],
+        [[trackingDict valueForKey:@"Escalent"] firstObject],
         [[trackingDict valueForKey:@"G-Lock Analytics"] firstObject]
     ];
     for (NSString *regexValue in cssTrackingDict) {
@@ -161,8 +163,9 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
                                                      offset:offset
                                                    template:@"$0"];
         
+        // skip spacers and RFC2392 embedded images
         NSString* replacement;
-        NSString *regexStr = @"spacer|attachments.office.net/owa/|fedex_collective_logo_|apple_logo_web|sidebar-gradient|transparent.gif";
+        NSString *regexStr = @"cid:|spacer|attachments.office.net/owa/|fedex_collective_logo_|apple_logo_web|sidebar-gradient|transparent.gif";
         NSRange matchedRange = [match rangeFromPattern:regexStr];
         if (matchedRange.location != NSNotFound) {
             continue; // no replacement
@@ -192,10 +195,10 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         ],
         @"365offers.trade": @[@"trk.365offers.trade"],
         @"3hands": @[@"mi.pbz.jp/"],
-        @"4Cite": @[@"/\\?sv_cid=\\d+_\\d+&sv_emopen=true&sv_sveme=\\w+"],
+        @"4Cite": @[@"/\\?sv_cid="],
         @"ActiveCampaign": @[
-            @"/lt.php\\?.*l=open",
-            @".lt.acemln(a|b|c|d).com/Prod/link-tracker\\?nl="
+            @"/lt.php\\?",
+            @"/Prod/link-tracker\\?nl="
         ],
         @"Act-On": @[@"actonsoftware.com"],
         @"activecore": @[@"h-cast.jp/mail_open"],
@@ -227,7 +230,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"gqco.net/i/",
         ],
         @"Alibaba": @[@"ae.mmstat.com/ae.edm.edm_open"],
-        @"Alida": @[@"www.aaacrossroads.com/c/static_images/.*.png1"], // formerly Vision Critical
+        @"Alida": @[@".png1"], // formerly Vision Critical
         @"All Nippon Airways": @[@"amc.ana.co.jp/bin/checker"],
         @"Amazon": @[@"sellercentral(-europe|-japan|)?.amazon.(com|co.uk|com.au|sg|in|com.tr|ae|com.br)/nms/img/"],
         @"Amazon SES": @[
@@ -241,7 +244,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"/CI0/(\\w|-){60}/(\\w|-){43}=\\d{3}"
         ],
         @"Amobee": @[@"d.turn.com/r/"],
-        @"Apo.com": @[@"info.apo.com/op/\\d+/.+.gif"],
+        @"Apo.com": @[@"info.apo.com/op/"],
         @"Apple": @[
           @"apple.com/report/2/its_mail_sf",
           @"apple_email_link/spacer",
@@ -256,29 +259,34 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"i.trellomail.com/e/eo",
             @"bitbucket.org/account/notifications/mark-read/"
         ],
-        @"AT&T": @[@"clicks.att.com/OCT/eTrac\\?EMAIL_ID=\\d+&src="],
+        @"AT&T": @[@"clicks.att.com/OCT/eTrac\\?EMAIL_ID="],
         @"AutoAlert": @[
             @"dealer.autoalert.com/email/tracking/open",
             @"fzlnk.com/AutoAlertEmailHandler.ashx"
         ],
         @"Aurea": @[ // Lyris
-            @"/db/.*/.*/1.gif",
+            @"/1.gif",
         ],
         @"Autopilot": @[@"autopilotmail\\d?.io"],
         @"AWeber": @[@"openrate.aweber.com"],
-        @"Backpack Internet": @[@"app.bentonow.com/ahoy/messages/"],
+        @"Backpack Internet": @[
+            @"app.bentonow.com/ahoy/messages/",
+            @"track.bentonow.com/tracking/emails/"
+        ],
         @"Bananatag": @[@"bl-1.com"],
         @"Bazaarvoice": @[@"bazaarvoice.com/a.gif"],
         @"Bison": @[@"clicks.bisonapp.com"],
-        @"Bandsintown": @[@"px1.bandsintown.com/.+.gif"],
+        @"Bandsintown": @[@"px1.bandsintown.com"],
         @"Benchmark Email": @[@"bmetrack.com/c/o"],
         @"Blackbaud": @[
             @"support.planetary.org/site/PixelServer",
             @"/smtp.mailopen\\?id=" // not 100% sure
         ],
+        @"Bloomreach": @[@"cdn.us1.exponea.com/(\\w|.|/|-){100,150}/open"],
         @"Blueshift.com": @[
             @"getblueshift.com/track"
         ],
+        @"British Airways": @[@"britishairways.com/cms/global/assets/images/global/email_images/structural/primary1px.gif"],
         @"Bombcom": @[@"bixel.io"],
         @"Boomerang": @[@"mailstat.us/tr"],
         @"Boots": @[@"boots.com/rts/open.aspx"],
@@ -286,8 +294,8 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Browserstack": @[@"browserstack.com/images/mail/track-open"],
         @"BuzzStream": @[@"tx.buzzstream.com"],
         @"Campaign Monitor": @[
-            @"cmail\\d{1,2}.com/t/.+.gif",
-            @"createsend\\d+.com/.+.gif"
+            @"cmail\\d{1,2}.com/t/",
+            @"createsend\\d+.com"
         ],
         @"Campaigner": @[@"trk.cp20.com/open/"],
         @"CanaryMail": @[@"canarymail.io(:\\d+)?/track"],
@@ -305,6 +313,10 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Conrad": @[@"aktuell.conrad.de/g.html"],
         @"Constant Contact": @[@"rs6.net/on.jsp"],
         @"ContactMonkey": @[@"contactmonkey.com/api/v1/tracker"],
+        @"Copernica": @[
+            @"/image/\\d{4}/\\w{32}/image.gif\\?cdmiv=",
+            @"/images/pixel2.gif\\?pomiv="
+        ],
         @"ConvertKit": @[
             @"convertkit-mail.com/o/",
             @"open.convertkit-mail2.com/[a-z0-9]{20}"
@@ -314,6 +326,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Cprpt": @[@"/o.aspx\\?t="],
         @"Creditmantri.com": @[@"mailer.creditmantri.com/t/"],
         @"Critical Impact": @[@"portal.criticalimpact.com/c2/"],
+        @"Cuenote": @[@"cuenote.jp/c/"],
         @"Customer.io": @[
             @"customeriomail.com/e/o",
             @"track.customer.io/e/o",
@@ -342,7 +355,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"/mo/\\w{43}.gif",
             @"emarsys.com/e2t/o/"
         ],
-        @"EmberPoint MailPublisher": @[@"rec.mpse.jp/(.*)/rw/beacon_"],
+        @"EmberPoint MailPublisher": @[@"rec.mpse.jp"],
         @"Envoke": @[@"envoke.com/o/"],
         @"Epic Games": @[@"accts.epicgames.com/O/"],
         @"Epsilon": @[
@@ -351,6 +364,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"/O/(\\w|-){214}",
             @"ind.dell.com"
         ],
+        @"Escalent": @[@"email-analytics.morpace.com"],
         @"eSputnik": @[@"esputnik.com/repository/applications/commons/hidden.png"],
         @"Etransmail": @[@"ftrans03.com/linktrack/"],
         @"EventBrite": @[@"eventbrite.com/emails/action"],
@@ -358,7 +372,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"EveryAction": @[@"click.everyaction.com/j/"],
         @"Evite": @[@"pippio.com/api/sync", @"nli.evite.com/imp"],
         @"ezyVet": @[@"ezyvet.com/email_open_log.php"],
-        @"Fastic": @[@"/e/eo\\?_t=[^>]+_m=[^>]+_e="],
+        @"Fastic": @[@"/e/eo\\?_t="],
         @"Flatastic": @[@"api.flatastic-app.com/index.php/img"],
         @"Flipkart": @[@"flipkart.com/t/open"],
         @"ForMirror": @[@"formirror.com/open/"],
@@ -368,7 +382,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"/o/(w){10,}/(w){10,}",
         ],
         @"FrontApp": @[
-            @"app.frontapp.com/(.*)?/seen",
+            @"app.frontapp.com",
             @"web.frontapp.com/api"
         ],
         @"GearBest": @[@"appinthestore.com/marketing/mail-user-deal/open"],
@@ -390,7 +404,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"ad.doubleclick.net/ddm/ad",
             @"google-analytics.com/collect",
             @"google.com/appserve/mkt/img/",
-            @"notifications.google.com/g/img/(.*).gif",
+            @"notifications.google.com/g/img/",
             @"youtube.com/gen_204",
             @"youtube.com/attribution_link"
         ],
@@ -448,7 +462,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"go.rjmetrics.com"
         ],
         @"Mailbird": @[@"tracking.getmailbird.com/OpenTrackingPixel/"],
-        @"Mailbutler": @[@"bowtie.mailbutler.io/tracking/hit/(.*)/t.gif"],
+        @"Mailbutler": @[@"bowtie.mailbutler.io/tracking/hit/"],
         @"Mailcampaigns": @[@"interface.mailcampaigns.nl/v\\d/t/"],
         @"Mailcastr": @[@"mailcastr.com/image/"],
         @"MailCoral": @[@"mailcoral.com/open"],
@@ -474,6 +488,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Maropost": @[@"/a/\\d{4}/open/\\d{4}/\\d{6,7}/\\w{40}"],
         @"MDirector": @[@"track.mdrctr.com/track/open/key/"],
         @"Medallia": @[@"survey\\d?.medallia.[A-Za-z]{2,3}/\\?\\w+&invite-opened=yes"],
+        @"Mercari": @[@"bmo.mercari.jp"],
         @"MessageGears": @[@"/o/4/eyJhaSI6"],
         @"Meta": @[
             @"facebook.com/aymt/aa/",
@@ -494,24 +509,26 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"mixmax.com/api/track/"
         ],
         @"Mixpanel": @[@"api.mixpanel.com/(trk|track)"],
+        @"Moneyforward": @[@"tm.moneyforward.com/I/"],
         @"Movable Ink": @[
 //            @"/p/rp/\\w{16}.png", // exception for useful info, call-to-action or ad banners
             @"/p/(c|u)p/\\w{16,32}/o.gif"
         ],
+        @"Mumara": @[@"/campaign/track-email/\\d{6}__\\d{3}__\\d{7}__\\d{3}"],
         @"MyEmma": @[@"e2ma.net/track", @"t.e2ma.net"],
         @"Nation Builder": @[@"nationbuilder.com/r/o"],
         @"NeteCart": @[@"netecart.com/ltrack"],
         @"Netflix": @[@"beaconimages.netflix.net/img/"],
         @"NetHunt": @[
-            @"nethunt.com/api/v1/track/email/",
-            @"nethunt.co(.*)\\?/pixel.gif"
+            @"nethunt.com/api/v1/track/email/"
+//            @"nethunt.co(.*)\\?/pixel.gif"
         ],
-        @"Neustar": @[@"/emailprefs/images/\\w+/\\d+/\\d"],
+        @"Neustar": @[@"/emailprefs/images/\\w+/\\d+/"],
         @"Newegg": @[@"newegg.com/mr/\\w{32}/\\w{96}.gif"],
         @"NewtonHQ": @[@"tr.cloudmagic.com"],
         @"NTT": @[@"club-ntt-west.com/cn-w/cmn/img/1.png"],
         @"Omnisend": @[@"/transactional/track/\\w{24}\\?signature="],
-        @"Ongage": @[@"/\\?x(o|u)l=\\w{20,29}&(amp;)?eih=\\w"],
+        @"Ongage": @[@"/\\?x(o|u)l=\\w{20,29}&(amp;)?eih="],
         @"OpenBracket": @[@"openbracket.co/track"],
         @"Opicle": @[@"track.opicle.com"],
         @"Optimove": @[@"/ss/o/(\\w|-){22}/\\w{3}/(\\w|-){22}/\\w{2}.gif"],
@@ -540,7 +557,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Paytm": @[@"trk.paytmemail.com"],
         @"Peach Aviation": @[
             @"mlapp.flypeach.com/mail/prod/receipt/read.php\\?id=",
-            @"mag.flypeach.com/c/.*.gif" // Cuenote
+            @"mag.flypeach.com/c/" // Cuenote
         ],
         @"PersistIQ": @[@"infinite-stream-5194.herokuapp.com/pixel"],
         @"phpList": @[@"/ut.php\\?u="],
@@ -556,8 +573,8 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Rabobank": @[@"mail.rabobank.nl/public/o/"],
         @"Rakuten": @[
             @"img.travel.rakuten.co.jp/share/mail/img/open/",
-            @"r.rakuten.co.jp/(.*).gif\\?mpe=(\\d+)",
-            @"cl.rakuten-bank.co.jp/rw/beacon_(.*).gif",
+            @"r.rakuten.co.jp",
+            @"cl.rakuten-bank.co.jp/rw/beacon_",
             @"cmb.rakuten-sec.co.jp/bin/checker"
         ],
         @"ReachMail": @[@"/open/(\\w|-){23}/image.gif"],
@@ -575,8 +592,8 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"beacon.krxd.net",
             @"app.relateiq.com/t.png",
             @"nova.collect.igodigital.com",
-            @"exct.net/open.aspx",
-            @"click.*./open.aspx\\?",
+//            @"exct.net/open.aspx",
+            @"/open.aspx\\?",
             @"pixel.inbox.exacttarget.com/pixel.gif",
             // Pardot
             @"welcome.michaelcassel.com/r/\\d{6,9}/1/\\d{6,9}/open/1",
@@ -594,7 +611,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Sendinblue": @[
             @"sendibtd.com",
             @"sendibw{2}.com/track/",
-            @"amxe.net/\\S+.gif", // formerly Newsletter2Go
+            @"amxe.net", // formerly Newsletter2Go
             @"/[a-z]{2}/op/",
         ],
         @"SendGrid": @[
@@ -613,7 +630,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"/wf/open\\?upn="
         ],
         @"SendPulse": @[@"stat-pulse.com"],
-        @"Sendy": @[@"/sendy/t/"],
+        @"Sendy": @[@"/t/\\w{22}/\\w{22}"],
         @"Shopify": @[@"/tools/emails/open/"],
         @"Signal": @[@"signl.live/tracker"],
         @"Smore": @[@"smore.com/app/reporting/pixel/"],
@@ -632,7 +649,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
 //            @"go.sparkpostmail.com/q/"
 //            @"post.spmailtechno.com/q/",
             @"sparkpostmail2.com",
-            @"/q/.*~~/.*~/",
+            @"/q/.*~~/",
         ],
         @"Splio": @[@"trk-2.net/ouv"],
         @"Staples": @[@"/ctt/mktOpen\\?"],
@@ -640,8 +657,10 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Step Coupon": @[@"step-coupon.com/review_mail_read_status.html"],
         @"Streak": @[@"mailfoogae.appspot.com"],
         @"SMTP.com": @[@"track.smtpsendmail.com/\\d{5,7}/o"],
+        @"Squarespace": @[@"engage.squarespace-mail.com/v2/a.gif"],
         @"Substack": @[@"substack.com/o/"],
         @"Superhuman": @[@"r.superhuman.com"],
+        @"Taguchi": @[@"taguchimail.com/i/app"],
         @"TataDocomoBusiness": @[@"tatadocomobusiness.com/rts/"],
         @"Techgig": @[@"tj_mailer_opened_count_all.php"],
         @"Telstra": @[@"tapi.telstra.com/presentation/v1/notification-mngmt/delivery-status-tracker"],
@@ -655,7 +674,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
             @"s2.washingtonpost.com/beacon/"
         ],
         @"Thunderhead": @[@"na5.thunderhead.com"],
-        @"Tinyletter": @[@"tinyletterapp.com.*\\?open.gif/"],
+        @"Tinyletter": @[@"tinyletterapp.com"],
         @"ToutApp": @[@"go.toutapp.com"],
         @"Track": @[
             @"trackapp.io/(b|r)/",
@@ -672,7 +691,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Twitter": @[@"twitter.com/scribe/ibis"],
         @"UNiDAYS": @[@"links\\d?.m.myunidays.com"],
         @"Unsplash": @[@"email.unsplash.com/o/"],
-        @"Upland PostUp": @[@"efeedbacktrk.com/.*.gif"],
+        @"Upland PostUp": @[@"efeedbacktrk.com"],
         @"US Bancorp": @[@"post-images.com/amy/open.action"],
         @"User.com": @[@".user.com/emails/open/"],
         @"Validity": @[
@@ -684,16 +703,17 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         @"Verizon": @[@"verizon.com/econtact/ecrm/EmailTracking.serv"],
         @"VinSolutions": @[@"vinlens.com/email.ashx\\?c="],
         @"Vtiger": @[@"od2.vtiger.com/shorturl.php"],
-        @"WhatCounts": @[@"whatcounts.com/t"],
+        @"WhatCounts": @[@"/t\\?c=\\d{4}&r=\\d{4}&l=\\d{2,3}&t=\\d{2}&e=\\w{48}"],
         @"We Are Web": @[@"tracking.weareweb.in/index.php/campaigns/"],
         @"Webtrekk": @[@"webtrekk.net"],
+        @"Windscribe": @[@"windscribe.com/pixel"],
         @"WildApricot": @[
             @"wildapricot.com/o/",
             @"wildapricot.org/emailtracker",
             @"/EmailTracker/EmailTracker.ashx"
         ],
         @"Wish": @[@"wish.com/email-beacon.png"],
-        @"Wix": @[@"shoutout.wix.com/.*/pixel"],
+        @"Wix": @[@"shoutout.wix.com"],
         @"WordPress": @[@"pixel.wp.com/t.gif"],
         @"Yahoo!": @[@"a.analytics.yahoo.com/p.pl"],
         @"Yahoo! Japan": @[@"dsb.yahoo.co.jp/api/v1/clear.gif"],
@@ -707,7 +727,7 @@ NSString * const kCSSTemplateRegex = @"(background-image|content):\\s?url\\([\'\
         ],
         @"Zoho": @[
             @"maillist-manage.com/clicks/",
-            @"/clicks/.*/.*/open.gif",
+            @"/open.gif",
             @"sender\\d.zohoinsights-crm.com/ocimage/"
         ],
     };

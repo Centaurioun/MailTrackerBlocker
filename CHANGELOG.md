@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.7.14] - 2023-06-19
+
+- #201 add Escalent, improve Sendy rules and ignore RFC2392 embedded images
+
+## [0.7.14] - 2023-04-07
+
+- #199 fix sidemenu "Help" or "Website" crash (thanks @oneofthedamons)
+
+## [0.7.13] - 2023-03-02
+
+- #197 support Ventura 13.3 (thanks @berkue)
+
+## [0.7.12] - 2023-02-22
+
+- add Cuenote, Moneyforward rules
+- #196 fix WhatCounts rule (thanks @malwcal)
+
+## [0.7.11] - 2023-02-12
+
+- add Mercari (JP), Windscribe, Bloomreach, Mumara rules
+- #194 #106 fix Installer.app opening during CLI/Homebrew installations (thanks @toobuntu, @yhoiseth)
+
+## [0.7.10] - 2023-01-29
+
+- add Squarespace rule
+- improve Bento rule (Backpack Internet)
+
+## [0.7.9] - 2023-01-04
+
+- #191 improve ActiveCampaign rule (thanks @m-schmitt)
+- add Copernica and British Airways rules (thanks @Jee-Bee)
+
 ## [0.7.8] - 2022-12-11
 
 - #190 add Steam rule

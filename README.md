@@ -1,4 +1,4 @@
-# MailTrackerBlocker [![Awesome Humane Tech](https://raw.githubusercontent.com/humanetech-community/awesome-humane-tech/main/humane-tech-badge.svg?sanitize=true)](https://github.com/humanetech-community/awesome-humane-tech)
+# MailTrackerBlocker [![Awesome Humane Tech](https://codeberg.org/teaserbot-labs/delightful-humane-design/raw/branch/main/humane-tech-badge.svg)](https://codeberg.org/teaserbot-labs/delightful-humane-design)
 
 MailTrackerBlocker is a plugin (mailbundle) for the default Mail app built-in to macOS. Email marketers and other interests often embed these trackers in HTML emails so they can track how often, when and where you open your emails. This plugin labels who is tracking you and strips out spy pixels out of the HTML before display, rendering the typical advice of **disabling "load remote content in messages" unnecessary**.
 
@@ -94,6 +94,10 @@ defaults delete com.apple.mail _mtb_LastUpdateCheckDate
 
 Typically caused by Mac migration or restoration from backup. [Delete Mail's private plugin-ins dir (or DataVaults)](https://c-command.com/spamsieve/help/resetting-mail-s-privat) to fix this issue. This dir will automatically be regenerated afterwards.
 
+### Why is my Mail so slow?
+
+This issue isn't related to MailTrackerBlocker but such problems can be resolved by doing a [Mailbox Rebuild](https://c-command.com/spamsieve/help/how-can-i-rebuild-apple) to force Mail to regenerate its indexes.
+
 
 ## Building from source
 
@@ -101,20 +105,18 @@ Building will automatically install a copy into your `/Library/Mail/Bundles/` di
 
 ```bash
 git clone https://github.com/apparition47/MailTrackerBlocker.git --recursive
+cd MailTrackerBlocker
 ```
 
 #### A. Make
 
-You'll need to edit `Makefile` and specify your own `Developer ID Application` (used to sign the plugin binary [for macOS 11 and up]) and `Developer ID Installer` (used to sign the pkg) certificates.
+To sign with your identity, edit the `Makefile` to specify your own `Developer ID Application` (used to sign the plugin binary [for macOS 11 and up]) and `Developer ID Installer` (used to sign the pkg) certificates. You can also comment out the top lines to disable signing.
+
+To build binary, pkg and sign (if configured):
 
 ```bash
-cd MailTrackerBlocker
-
-# build-only
-make
-
-# build, sign binary and make pkg
 make all
+open build/Release
 ```
 
 #### B. Xcode

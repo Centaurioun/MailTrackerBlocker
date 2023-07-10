@@ -125,6 +125,20 @@
     XCTAssertEqual(msg.certainty, BLOCKING_RESULT_CERTAINTY_CONFIDENT_HARD_MATCH);
 }
 
+- (void)testWhatCounts {
+    MTBBlockedMessage *msg = [[MTBBlockedMessage alloc] initWithHtml:@"<!--STARTTTAG-->\\n<img src=\"http://marketing.yourcentre.com.au/t?c=1109&r=6455&l=445&t=10&e=BD6A538E5E55F07F21769496C4BAD3DF0CD83620A56156C8\" width=1 height=1 border=0>\\n<!--ENDTTAG-->"];
+    XCTAssertEqualObjects(msg.sanitizedHtml,
+                          @"<!--STARTTTAG-->\\n\\n<!--ENDTTAG-->");
+    XCTAssertEqualObjects(msg.detectedTracker, @"WhatCounts");
+    XCTAssertEqual(msg.certainty, BLOCKING_RESULT_CERTAINTY_CONFIDENT_HARD_MATCH);
+
+    MTBBlockedMessage *msg2 = [[MTBBlockedMessage alloc] initWithHtml:@"<!--STARTTTAG-->\\n<img src=\"https://tracking.whatcounts.com/t?c=1286&r=6049&l=72&t=10&e=0217D218A1DD2DFBDB56273B045B6272E479F7D10B9C8731\" width=1 height=1 border=0>\\n<!--ENDTTAG-->"];
+    XCTAssertEqualObjects(msg2.sanitizedHtml,
+                          @"<!--STARTTTAG-->\\n\\n<!--ENDTTAG-->");
+    XCTAssertEqualObjects(msg2.detectedTracker, @"WhatCounts");
+    XCTAssertEqual(msg2.certainty, BLOCKING_RESULT_CERTAINTY_CONFIDENT_HARD_MATCH);
+}
+
 - (void)testMailgun {
     MTBBlockedMessage *mail1 = [[MTBBlockedMessage alloc] initWithHtml:@"<img width=\"1px\" height=\"1px\" alt=\" src=\"http://email.mgdynamic1.webpt.com/o/eJwtz81uhCAUQOGnqZtJCCoOsmA3D9Ck3ZvL5aqMIArqaJ--P-n-LM5nNZUCAItEgGMHuLk468c1Q3BYOH0vq0bKsq7b1qqOKsOlqFtRGsFrUatKKXgTXIlKSd4CIa9YAOeLUZfSyAbR3qWVgpteNQrQ1tgbsrw4pqDfsAuUMwzUOauf8_6cDrOveFrCYXiNF17opxXD7vGK59CfYcoegj1SXjyuRdImmp-BtOccWd5262KxpHg4S6mLaYDZfcGf6WNL7qDb-3hlh-Bvn4yxf3WmdFDSSwrsRWbZGMbwDa8dYfg\">"];
     XCTAssertEqualObjects(mail1.sanitizedHtml, @"");
@@ -206,8 +220,8 @@
     NSString *css = @"<style>#_eoa_div, #_eoa_img { display: none; } @media print { #_eoa_div { background-image: url('https://b2ccbsz7BC.eoapxl.com/b2ccbsz7BC/3211022171135001432317022/P');} } div.OutlookMessageHeader, table.moz-email-headers-table, blockquote #_eoa_div, #mailContainerBody #_eoa_div {background-image: url('https://b2ccbsz7BC.eoapxl.com/b2ccbsz7BC/3211022171135001432317022/F') }</style>";
     MTBBlockedMessage *msg3 = [[MTBBlockedMessage alloc] initWithHtml:css];
     XCTAssertEqualObjects(msg3.sanitizedHtml, @"<style>#_eoa_div, #_eoa_img { display: none; } @media print { #_eoa_div { ;} } div.OutlookMessageHeader, table.moz-email-headers-table, blockquote #_eoa_div, #mailContainerBody #_eoa_div { }</style>");
-//    XCTAssertEqualObjects(msg3.detectedTracker, @"Email on Acid");
-//    XCTAssertEqual(msg3.certainty, BLOCKING_RESULT_CERTAINTY_CONFIDENT_HARD_MATCH);
+    // email on acid
+    XCTAssertEqual(msg3.knownTrackerCount, 2);
 }
 
 - (void)testMultipleBackgroundCSSAndImgTagTrackers {
@@ -217,6 +231,29 @@
     XCTAssertEqual(msg.knownTrackerCount, 10);
     XCTAssertTrue([msg.detectedTrackers containsObject:@"Litmus"]);
     XCTAssertTrue([msg.detectedTrackers containsObject:@"SparkPost"]);
+}
+
+- (void)testEscalentBackgroundCSSAndImgTagTrackers {
+    NSString *email = @"<style> @media print{ #_two50 { background-image:url('http://email-analytics.morpace.com/ea/IImB1RCPJg/?t=p&e=4642959029~F230064_7&c=F230064_7&ID=4642959029'); } } blockquote #_two50, #mailContainerBody #_two50, div.OutlookMessageHeader, table.moz-email-headers-table { background-image:url('http://email-analytics.morpace.com/ea/IImB1RCPJg/?t=f&e=4642959029~F230064_7&c=F230064_7&ID=4642959029'); } </style> <div id='_two50'></div> <img id='_two50_img' src='http://email-analytics.morpace.com/ea/IImB1RCPJg/?e=4642959029~F230064_7&c=F230064_7&ID=4642959029' width='1' height='1' style='margin:0 !important; padding:0 !important; border:0 !important; height:1px !important; width:1px !important;' />";
+    MTBBlockedMessage *msg = [[MTBBlockedMessage alloc] initWithHtml:email];
+    XCTAssertEqual(msg.detectedTrackers.count, 1);
+    XCTAssertEqual(msg.knownTrackerCount, 3);
+    XCTAssertTrue([msg.detectedTrackers containsObject:@"Escalent"]);
+}
+
+- (void)testSendy {
+    NSString *email = @"<img src=\"https://lists.panic.com/t/TfytDRucxMhTmMmeRUryNg/Bw2EZEL3ysIdV5Ql3aYwKw\" alt=\"\" style=\"width:1px;height:1px;\"/>";
+    MTBBlockedMessage *msg = [[MTBBlockedMessage alloc] initWithHtml:email];
+    XCTAssertEqual(msg.detectedTrackers.count, 1);
+    XCTAssertEqual(msg.knownTrackerCount, 1);
+    XCTAssertEqualObjects(msg.detectedTracker, @"Sendy");
+}
+
+- (void)testRFC2392EmbeddedSpacer {
+    NSString *email = @"<img src=\"cid:image001.gif@01D99D4F.450764F0\" v:src=\"cid:image001.gif@01D99D4F.450764F0\" v:shapes=\"_x0000_Mail\" width=\"0\" height=\"0\" class=\"shape\" style=\"display:none;width:0;height:0\">";
+    MTBBlockedMessage *msg = [[MTBBlockedMessage alloc] initWithHtml:email];
+    XCTAssertEqual(msg.detectedTrackers.count, 0);
+    XCTAssertEqual(msg.certainty, BLOCKING_RESULT_CERTAINTY_LOW_NO_MATCHES);
 }
 
 // expected not be marked as generic pixels
